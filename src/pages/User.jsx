@@ -3,10 +3,10 @@ import { useEffect, useContext } from "react";
 import { useParams, Link } from "react-router-dom";
 import RepoList from "../components/repos/RepoList";
 import GitHubContext from "../context/github/GithubContext";
+import { getUserAndRepos } from "../context/github/GithubActions";
 
 function User() {
-  const { getUser, user, loading, getUserRepos, repos } =
-    useContext(GitHubContext);
+  const { user, loading, dispatch } = useContext(GitHubContext);
   const params = useParams();
 
   let pos = { left: 0, x: 0 };
@@ -35,9 +35,13 @@ function User() {
   };
 
   useEffect(() => {
-    getUser(params.login);
-    getUserRepos(params.login);
-  }, []);
+    dispatch({ type: "SET_LOADING" });
+    const getUserData = async () => {
+      const userData = await getUserAndRepos(params.login);
+      dispatch({ type: "GET_USER_AND_REPOS", payload: userData });
+    };
+    getUserData();
+  }, [dispatch, params.login]);
 
   const {
     name,
@@ -72,7 +76,7 @@ function User() {
           <div className="custom-card-image mb-6 md:mb-0">
             <div className="rounded-lg shadow-xl card image-full">
               <figure>
-                <img src={avatar_url} />
+                <img src={avatar_url} alt="User avatar" />
               </figure>
               <div className="card-body justify-end">
                 <h2 className="card-title mb-0 text-stone-200">{name}</h2>
